@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DeepSeek 本地控制台</title>
+  <link rel="icon" href="/assets/deepseek-whale.svg?v=20260729-polish" type="image/svg+xml">
+  <link rel="shortcut icon" href="/assets/deepseek-whale.svg?v=20260729-polish" type="image/svg+xml">
+  <link rel="stylesheet" href="/vendor/katex/katex.min.css">
+  <link rel="stylesheet" href="/styles.css?v=20260730-table-no-scroll">
+</head>
+<body>
+  <div class="ambient-grid"></div>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="logo-img" src="/assets/deepseek-logo.svg" alt="DeepSeek">
+        <span class="brand-tag">本地控制台</span>
+      </div>
+
+      <button id="newSession" class="primary wide">新建对话</button>
+
+      <div class="session-panel">
+        <div class="section-row">
+          <span>会话</span>
+          <button id="refreshSessions" class="icon-btn" title="刷新会话">↻</button>
+        </div>
+        <input id="sessionSearch" class="session-search" placeholder="搜索会话">
+        <div id="sessions" class="sessions"></div>
+      </div>
+
+      <div class="sidebar-foot">
+        <div id="keyState" class="key-state">检查密钥中</div>
+        <div id="balanceCard" class="balance-card">
+          <span>当前余额</span>
+          <strong id="balanceAmount">读取中</strong>
+          <em id="balanceUpdated">等待刷新</em>
+        </div>
+        <div class="balance-actions">
+          <button id="keyBtn" class="ghost">密钥</button>
+          <button id="topUpBtn" class="primary">充值</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="headline">
+          <div id="sessionTitle" class="title">新对话</div>
+          <div class="subtitle">官方接口由本机代理，会话自动保存到 data/sessions.json</div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-tab="chat">聊天</button>
+          <button class="tab" data-tab="api">接口调试台</button>
+        </div>
+      </header>
+
+      <section id="chatPanel" class="panel chat-panel">
+        <div id="messages" class="messages"></div>
+        <div class="composer">
+          <div class="composer-glow"></div>
+          <textarea id="prompt" placeholder="输入消息，回车发送，Shift + 回车换行"></textarea>
+          <div id="attachments" class="attachments"></div>
+          <div id="attachmentNotice" class="attachment-notice hidden"></div>
+          <div class="composer-actions">
+            <div class="quick">
+              <select id="model"></select>
+              <select id="thinking" class="state-select">
+                <option value="disabled">快速模式 · 默认</option>
+                <option value="enabled">深度思考 · 增耗</option>
+              </select>
+              <button id="thinkingToggle" class="thinking-toggle thinking-disabled" type="button" aria-pressed="false">
+                <span class="thinking-icon" aria-hidden="true"></span>
+                <span class="thinking-main">快速模式</span>
+                <span class="thinking-sub">默认</span>
+              </button>
+              <select id="searchMode" class="state-select">
+                <option value="disabled">联网搜索关闭</option>
+                <option value="enabled">联网搜索开启</option>
+              </select>
+              <button id="searchToggle" class="search-toggle search-disabled" type="button" aria-pressed="false">
+                <span class="search-icon" aria-hidden="true"></span>
+                <span class="search-main">联网搜索</span>
+                <span class="search-sub">关闭</span>
+              </button>
+              <select id="effort" disabled title="快速模式不支持推理；开启深度思考后可调整推理强度">
+                <option value="off">不支持推理</option>
+                <option value="high">高强度推理</option>
+                <option value="max">最大强度推理</option>
+              </select>
+              <button id="attachBtn" class="ghost attach-button" type="button"><span class="attach-icon" aria-hidden="true"></span><span>文件</span></button>
+              <input id="fileInput" type="file" multiple hidden>
+            </div>
+            <button id="send" class="send" disabled title="请输入消息，或添加可发送的文本类文件">发送</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="apiPanel" class="panel api-panel hidden">
+        <div class="api-grid">
+          <div class="card controls">
+            <label>接口预设</label>
+            <select id="endpointPreset"></select>
+            <label>基础地址</label>
+            <select id="apiKind">
+              <option value="core">正式接口：https://api.deepseek.com</option>
+              <option value="beta">测试接口：https://api.deepseek.com/beta</option>
+              <option value="anthropic">兼容接口：https://api.deepseek.com/anthropic</option>
+            </select>
+            <label>请求方法</label>
+            <select id="apiMethod">
+              <option>GET</option>
+              <option>POST</option>
+              <option>PATCH</option>
+              <option>DELETE</option>
+            </select>
+            <label>接口路径</label>
+            <input id="apiPath" value="/models">
+            <button id="runApi" class="primary wide">执行接口</button>
+            <p class="hint">所有请求都由本地后端代理，接口密钥可在左下角“密钥”中配置，并保存到本地 .env。</p>
+          </div>
+          <div class="card body-editor">
+            <label>请求体</label>
+            <textarea id="apiBody" spellcheck="false"></textarea>
+          </div>
+          <div class="card result">
+            <label>返回结果</label>
+            <pre id="apiResult">{}</pre>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <aside class="settings">
+      <div class="section-row">
+        <span>参数</span>
+        <div class="settings-actions">
+          <span id="modelBadge" class="badge">V4 Pro</span>
+          <button id="resetSettings" class="reset-settings" type="button">恢复默认</button>
+        </div>
+      </div>
+      <div class="mini-panel">
+        <label>系统提示词</label>
+        <textarea id="systemPrompt" class="system-input"></textarea>
+      </div>
+      <div class="mini-panel">
+        <label>回答模式</label>
+        <select id="outputMode" class="state-select">
+          <option value="normal">普通回答</option>
+          <option value="table">表格整理</option>
+          <option value="json">JSON 输出</option>
+          <option value="steps">步骤解析</option>
+        </select>
+        <div class="tool-menu settings-tool-menu">
+          <button id="outputModeButton" class="tool-toggle" type="button">普通回答</button>
+          <div id="outputModeMenu" class="tool-popover hidden">
+            <button type="button" data-mode="normal">普通回答<span>自然语言默认输出</span></button>
+            <button type="button" data-mode="table">表格整理<span>优先输出 Markdown 表格</span></button>
+            <button type="button" data-mode="json">JSON 输出<span>固定字段，方便程序处理</span></button>
+            <button type="button" data-mode="steps">步骤解析<span>结论、步骤、依据更清楚</span></button>
+          </div>
+        </div>
+      </div>
+      <div class="mini-panel">
+        <label>文件处理方式</label>
+        <select id="fileMode" class="state-select">
+          <option value="attachment">按文件阅读</option>
+          <option value="plain">直接并入消息</option>
+        </select>
+        <button id="fileModeToggle" class="file-mode-toggle" type="button">按文件阅读</button>
+        <p id="fileModeHint" class="setting-hint">文件会保留文件名，让 AI 按附件理解。</p>
+      </div>
+      <div class="mini-panel">
+        <label>温度 <span id="tempValue">0.6</span></label>
+        <input id="temperature" type="range" min="0" max="2" step="0.1" value="0.6">
+      </div>
+      <div class="mini-panel">
+        <label>最大输出长度</label>
+        <input id="maxTokens" type="number" min="1" max="384000" value="4096">
+      </div>
+      <div class="mini-panel">
+        <label>核采样 <span id="topPValue">1</span></label>
+        <input id="topP" type="range" min="0" max="1" step="0.05" value="1">
+      </div>
+      <div class="mini-panel">
+        <label>停止词</label>
+        <input id="stopWords" placeholder="多个停止词用逗号分隔">
+      </div>
+      <div class="mini-panel">
+        <label>用户标识</label>
+        <input id="userId" placeholder="可选，用于缓存隔离">
+      </div>
+      <div class="note subtle">
+        官方接口目前只支持文本消息。图片、文档、容器上传在官方兼容表中标为不支持；这里的文件按钮只会读取文本类文件并加入消息。
+      </div>
+      <div class="note">
+        <strong>密钥位置</strong>
+        <code>D:\小工具\deepseek-api-demo\.env</code>
+      </div>
+      <div class="note subtle">
+        官方接口当前只显示确认为可用的模型。V3、R1、Coder、Math 等开源或历史系列不再放入选择器，避免误选后报错。
+      </div>
+    </aside>
+  </div>
+  <div id="confirmOverlay" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal">
+      <div class="modal-mark">!</div>
+      <div class="modal-copy">
+        <strong id="confirmTitle">确认操作</strong>
+        <p id="confirmText">此操作不可撤销。</p>
+      </div>
+      <div class="modal-actions">
+        <button id="confirmCancel" class="ghost">取消</button>
+        <button id="confirmOk" class="danger">确认删除</button>
+      </div>
+    </div>
+  </div>
+  <div id="keyOverlay" class="modal-overlay hidden" aria-hidden="true">
+    <div class="modal key-modal">
+      <div class="modal-mark key-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" role="img">
+          <path d="M15.5 7.5a5 5 0 1 0 1 5.9l1.7 1.7h2.3v2.3h2.3v2.8h-3.7l-5.1-5.1a5 5 0 0 0 1.5-7.6Z"></path>
+          <circle cx="8.5" cy="10.5" r="1.6"></circle>
+        </svg>
+      </div>
+      <div class="modal-copy">
+        <strong>接口密钥</strong>
+        <p>更换后会先校验密钥是否正确，校验通过才会保存并立即生效。</p>
+      </div>
+      <label class="key-field">
+        <span>当前密钥</span>
+        <div class="key-input-row">
+          <input id="keyInput" type="password" autocomplete="off" spellcheck="false" placeholder="请输入 DeepSeek API Key">
+          <button id="keyVisibilityToggle" class="ghost" type="button">显示</button>
+        </div>
+      </label>
+      <div id="keyModalStatus" class="key-modal-status" aria-live="polite"></div>
+      <div class="modal-actions">
+        <button id="keyCancel" class="ghost">取消</button>
+        <button id="keySave" class="primary confirm-primary">保存密钥</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.MathJax = {
+      loader: {
+        paths: { mathjax: "/vendor/mathjax" },
+        load: [
+          "[tex]/autoload",
+          "[tex]/ams",
+          "[tex]/bbox",
+          "[tex]/braket",
+          "[tex]/cancel",
+          "[tex]/cases",
+          "[tex]/color",
+          "[tex]/configmacros",
+          "[tex]/html",
+          "[tex]/mathtools",
+          "[tex]/mhchem",
+          "[tex]/newcommand",
+          "[tex]/noerrors",
+          "[tex]/noundefined",
+          "[tex]/physics",
+          "[tex]/textcomp",
+          "[tex]/unicode",
+          "[tex]/upgreek"
+        ]
+      },
+      tex: {
+        packages: {
+          "[+]": [
+            "autoload",
+            "ams",
+            "bbox",
+            "braket",
+            "cancel",
+            "cases",
+            "color",
+            "configmacros",
+            "html",
+            "mathtools",
+            "mhchem",
+            "newcommand",
+            "noerrors",
+            "noundefined",
+            "physics",
+            "textcomp",
+            "unicode",
+            "upgreek"
+          ]
+        },
+        inlineMath: [["\\(", "\\)"], ["$", "$"]],
+        displayMath: [["\\[", "\\]"], ["$$", "$$"]],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      chtml: {
+        fontURL: "/vendor/mathjax/output/fonts/mathjax-newcm/chtml/woff2",
+        matchFontHeight: false
+      },
+      startup: {
+        typeset: false
+      },
+      options: {
+        enableMenu: false,
+        enableExplorer: false,
+        enableExplorerHelp: false,
+        skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+        ignoreHtmlClass: "tex2jax_ignore",
+        processHtmlClass: "markdown-body"
+      },
+      a11y: {
+        inTabOrder: false,
+        help: false,
+        speech: false,
+        braille: false,
+        keyMagnifier: false,
+        mouseMagnifier: false,
+        hover: false,
+        infoPrefix: false,
+        infoRole: false,
+        infoType: false
+      }
+    };
+  </script>
+  <script defer src="/vendor/mathjax/tex-chtml.js"></script>
+  <script defer src="/vendor/katex/katex.min.js"></script>
+  <script defer src="/vendor/mermaid/mermaid.min.js"></script>
+  <script defer src="/vendor/canvg/canvg.bundle.js"></script>
+  <script defer src="/app.js?v=20260730-table-no-scroll"></script>
+</body>
+</html>
