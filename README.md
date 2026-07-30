@@ -19,14 +19,6 @@
 
 ## 界面截图
 
-### 聊天与参数
-
-![聊天与参数](docs/screenshots/main-chat.png)
-
-### Markdown、表格与代码
-
-![Markdown、表格与代码](docs/screenshots/markdown-render.png)
-
 ### 联网搜索来源
 
 ![联网搜索来源](docs/screenshots/search-sources.png)
