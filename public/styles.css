@@ -1284,7 +1284,7 @@ textarea,
 
 .md-table-wrap {
   max-width: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   margin: 12px 0;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1293,6 +1293,7 @@ textarea,
 
 .markdown-body table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   background: #fff;
   font-size: 14px;
@@ -1305,7 +1306,8 @@ textarea,
   text-align: left;
   vertical-align: middle;
   word-break: normal;
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .markdown-body th {
@@ -1316,8 +1318,7 @@ textarea,
 
 .markdown-body th:first-child,
 .markdown-body td:first-child {
-  min-width: 96px;
-  width: auto;
+  width: 96px;
   white-space: nowrap;
   word-break: keep-all;
   overflow-wrap: normal;
@@ -1325,18 +1326,18 @@ textarea,
   font-weight: 850;
 }
 
-.markdown-body th:nth-child(2):nth-last-child(2),
-.markdown-body td:nth-child(2):nth-last-child(2) {
-  min-width: 76px;
-  white-space: nowrap;
-  word-break: keep-all;
-  overflow-wrap: normal;
-}
-
 .markdown-body th:first-child:nth-last-child(3),
 .markdown-body td:first-child:nth-last-child(3) {
-  width: 18%;
-  min-width: 140px;
+  width: 92px;
+  min-width: 0;
+}
+
+.markdown-body th:nth-child(2):nth-last-child(2),
+.markdown-body td:nth-child(2):nth-last-child(2) {
+  width: auto;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
 }
 
 .markdown-body th:nth-child(2):nth-last-child(2):has(code),
@@ -1350,14 +1351,16 @@ textarea,
 
 .markdown-body th:nth-child(3):last-child,
 .markdown-body td:nth-child(3):last-child {
-  width: 38%;
-  min-width: 180px;
+  width: 124px;
+  min-width: 0;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .markdown-body th:first-child:nth-last-child(n + 4),
 .markdown-body td:first-child:nth-last-child(n + 4) {
-  min-width: 64px;
   width: 72px;
+  min-width: 0;
   text-align: center;
 }
 
@@ -1376,6 +1379,10 @@ textarea,
 
 .aligned-text-table table {
   table-layout: auto;
+}
+
+.aligned-text-table {
+  overflow-x: auto;
 }
 
 .aligned-text-table td:first-child {
