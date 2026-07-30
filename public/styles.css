@@ -1743,7 +1743,7 @@ textarea,
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   margin-top: 7px;
 }
 
@@ -1752,15 +1752,15 @@ textarea,
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 5px;
   flex: 1 1 auto;
   width: auto;
   min-width: 0;
 }
 
 #model {
-  flex: 1.25 1 202px;
-  min-width: 202px;
+  flex: 1.22 1 190px;
+  min-width: 190px;
   max-width: none;
 }
 
@@ -1830,8 +1830,8 @@ textarea:focus {
 }
 
 #effort {
-  flex: 1 1 158px;
-  min-width: 158px;
+  flex: 1 1 128px;
+  min-width: 128px;
   max-width: none;
   padding-left: 10px;
   padding-right: 28px;
@@ -1903,8 +1903,8 @@ textarea:focus {
 }
 
 .search-toggle {
-  flex: 1 1 148px;
-  min-width: 148px;
+  flex: 1 1 132px;
+  min-width: 132px;
   color: #64748b;
   border-color: rgba(128, 145, 171, .28);
   background: linear-gradient(135deg, rgba(248,250,252,.92), rgba(241,245,249,.92));
@@ -1912,8 +1912,8 @@ textarea:focus {
 }
 
 .thinking-toggle {
-  flex: 1.05 1 152px;
-  min-width: 152px;
+  flex: 1.05 1 144px;
+  min-width: 144px;
 }
 
 .search-toggle.search-enabled {
@@ -2171,7 +2171,7 @@ textarea:focus {
   flex: none;
   min-width: 78px;
   height: 38px;
-  margin-left: 0;
+  margin-left: 2px;
   padding: 0 18px;
 }
 
