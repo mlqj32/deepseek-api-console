@@ -23,9 +23,9 @@
 
 ![聊天与参数](docs/screenshots/main-chat.png)
 
-### Markdown、表格与数学公式
+### Markdown、表格与代码
 
-![Markdown 渲染](docs/screenshots/markdown-render.png)
+![Markdown、表格与代码](docs/screenshots/markdown-render.png)
 
 ### 联网搜索来源
 
@@ -59,12 +59,9 @@ http://localhost:3217
 
 ## 配置密钥
 
-推荐两种方式任选其一：
+推荐直接在 UI 里配置：启动项目后，在界面左下角点击“密钥”，粘贴 DeepSeek API Key。系统会先校验密钥是否可用，校验通过后自动保存并立即生效，一般不需要手动编辑 `.env`。
 
-1. 在界面左下角点击“密钥”，粘贴 DeepSeek API Key，校验成功后立即生效。
-2. 复制 `.env.example` 为 `.env`，把其中的占位密钥替换为自己的真实密钥。
-
-示例：
+`.env` 方式只作为备用方案，适合服务器部署、批量预置或不想打开界面配置的场景。可以复制 `.env.example` 为 `.env`，再填入自己的真实密钥：
 
 ```env
 DEEPSEEK_API_KEY=your_deepseek_api_key_here
