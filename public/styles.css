@@ -1293,7 +1293,7 @@ textarea,
 
 .markdown-body table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
   background: #fff;
   font-size: 14px;
@@ -1318,47 +1318,66 @@ textarea,
 
 .markdown-body th:first-child,
 .markdown-body td:first-child {
-  width: 96px;
-  white-space: nowrap;
-  word-break: keep-all;
-  overflow-wrap: normal;
   text-align: left;
   font-weight: 850;
 }
 
-.markdown-body th:first-child:nth-last-child(3),
-.markdown-body td:first-child:nth-last-child(3) {
-  width: 92px;
-  min-width: 0;
+.md-table-two table,
+.md-table-info table,
+.md-table-compare table,
+.md-table-wide table {
+  table-layout: fixed;
 }
 
-.markdown-body th:nth-child(2):nth-last-child(2),
-.markdown-body td:nth-child(2):nth-last-child(2) {
+.md-table-two th,
+.md-table-two td {
+  width: 50%;
+}
+
+.md-table-info th:first-child,
+.md-table-info td:first-child {
+  width: 92px;
+  min-width: 0;
+  white-space: nowrap;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.md-table-info th:nth-child(2),
+.md-table-info td:nth-child(2) {
   width: auto;
   white-space: normal;
   word-break: normal;
   overflow-wrap: anywhere;
 }
 
-.markdown-body th:nth-child(2):nth-last-child(2):has(code),
-.markdown-body td:nth-child(2):nth-last-child(2):has(code) {
-  width: 44%;
-  min-width: 180px;
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: break-word;
-}
-
-.markdown-body th:nth-child(3):last-child,
-.markdown-body td:nth-child(3):last-child {
-  width: 124px;
+.md-table-info th:nth-child(3),
+.md-table-info td:nth-child(3) {
+  width: 156px;
   min-width: 0;
   word-break: keep-all;
   overflow-wrap: break-word;
 }
 
-.markdown-body th:first-child:nth-last-child(n + 4),
-.markdown-body td:first-child:nth-last-child(n + 4) {
+.md-table-compare th:first-child,
+.md-table-compare td:first-child {
+  width: 132px;
+  min-width: 0;
+  white-space: normal;
+}
+
+.md-table-compare th:nth-child(2),
+.md-table-compare td:nth-child(2),
+.md-table-compare th:nth-child(3),
+.md-table-compare td:nth-child(3) {
+  width: calc((100% - 132px) / 2);
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.md-table-wide th:first-child,
+.md-table-wide td:first-child {
   width: 72px;
   min-width: 0;
   text-align: center;

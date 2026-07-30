@@ -589,9 +589,20 @@ function renderMarkdownTable(lines) {
   const rows = lines.map(line => line.trim().replace(/^\||\|$/g, "").split("|").map(cell => cell.trim()));
   const head = rows[0] || [];
   const body = rows.slice(2);
+  const layoutClass = getMarkdownTableLayoutClass(head);
   const thead = `<thead><tr>${head.map(cell => `<th>${renderInlineMarkdown(cell)}</th>`).join("")}</tr></thead>`;
   const tbody = `<tbody>${body.map(row => `<tr>${row.map(cell => `<td>${renderInlineMarkdown(cell)}</td>`).join("")}</tr>`).join("")}</tbody>`;
-  return `<div class="md-table-wrap"><table>${thead}${tbody}</table></div>`;
+  return `<div class="md-table-wrap ${layoutClass}"><table>${thead}${tbody}</table></div>`;
+}
+
+function getMarkdownTableLayoutClass(head) {
+  const cells = head.map(cell => String(cell || "").replace(/\s+/g, ""));
+  const hasHeader = value => cells.some(cell => cell.includes(value));
+  if (cells.length === 2) return "md-table-two";
+  if (cells.length === 3 && hasHeader("阶段") && hasHeader("内容") && hasHeader("年级")) return "md-table-info";
+  if (cells.length === 3) return "md-table-compare";
+  if (cells.length >= 4) return "md-table-wide";
+  return "";
 }
 
 function renderBoxDrawingTable(source) {
@@ -606,9 +617,10 @@ function renderBoxDrawingTable(source) {
   if (!rows.every(row => row.length === width)) return "";
   const head = rows[0];
   const body = rows.slice(1);
+  const layoutClass = getMarkdownTableLayoutClass(head);
   const thead = `<thead><tr>${head.map(cell => `<th>${renderInlineMarkdown(cell)}</th>`).join("")}</tr></thead>`;
   const tbody = `<tbody>${body.map(row => `<tr>${row.map(cell => `<td>${renderInlineMarkdown(cell)}</td>`).join("")}</tr>`).join("")}</tbody>`;
-  return `<div class="md-table-wrap"><table>${thead}${tbody}</table></div>`;
+  return `<div class="md-table-wrap ${layoutClass}"><table>${thead}${tbody}</table></div>`;
 }
 
 function renderAlignedTextTable(source) {
