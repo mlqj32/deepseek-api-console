@@ -909,7 +909,11 @@ async function handleApi(req, res) {
       const body = await parseJsonBody(req);
       const apiKey = String(body.apiKey || "").trim();
       if (!apiKey) {
-        return json(res, 400, { error: "请输入 DeepSeek 接口密钥。" });
+        saveEnvValue("DEEPSEEK_API_KEY", "");
+        return json(res, 200, {
+          ok: true,
+          keyConfigured: false
+        });
       }
       if (/[\r\n]/.test(apiKey) || apiKey.includes("your_deepseek_api_key_here")) {
         return json(res, 400, { error: "密钥不正确，请检查后重新输入。" });

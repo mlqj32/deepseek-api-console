@@ -1327,7 +1327,7 @@ async function openKeyModal() {
   try {
     const result = await api("/api/key");
     input.value = result.apiKey || "";
-    setKeyModalStatus(result.keyConfigured ? "当前密钥已读取，可直接修改后保存。" : "当前未配置密钥，请输入后保存。", result.keyConfigured ? "ok" : "info");
+    setKeyModalStatus(result.keyConfigured ? "当前密钥已读取，可直接修改后保存；留空保存可清除密钥。" : "当前未配置密钥，请输入后保存。", result.keyConfigured ? "ok" : "info");
     input.focus();
     input.select();
   } catch (error) {
@@ -1344,14 +1344,9 @@ async function saveKeyFromModal() {
   const saveButton = $("#keySave");
   const cancelButton = $("#keyCancel");
   const apiKey = (input?.value || "").trim();
-  if (!apiKey) {
-    setKeyModalStatus("请输入 DeepSeek API Key。", "bad");
-    input?.focus();
-    return;
-  }
   saveButton.disabled = true;
   cancelButton.disabled = true;
-  setKeyModalStatus("正在校验密钥...", "info");
+  setKeyModalStatus(apiKey ? "正在校验密钥..." : "正在清除密钥...", "info");
   try {
     const result = await api("/api/key", {
       method: "POST",
@@ -1359,12 +1354,18 @@ async function saveKeyFromModal() {
     });
     state.config = {
       ...(state.config || {}),
-      keyConfigured: true
+      keyConfigured: Boolean(result.keyConfigured)
     };
-    setKeyState(true);
-    if (result.balance) updateBalanceState(result.balance);
-    else refreshBalance().catch(() => updateBalanceState(null));
-    setKeyModalStatus("密钥校验通过，已保存。", "ok");
+    if (result.keyConfigured) {
+      setKeyState(true);
+      if (result.balance) updateBalanceState(result.balance);
+      else refreshBalance().catch(() => updateBalanceState(null));
+      setKeyModalStatus("密钥校验通过，已保存。", "ok");
+    } else {
+      setKeyState(false);
+      updateBalanceState(null);
+      setKeyModalStatus("密钥已清除，当前为未配置状态。", "ok");
+    }
     closeKeyModal();
   } catch (error) {
     setKeyModalStatus(error.message || "密钥不正确，请检查后重新输入。", "bad");
