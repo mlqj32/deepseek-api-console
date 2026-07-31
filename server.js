@@ -111,7 +111,7 @@ function deepseekHeaders(extra = {}) {
   loadEnv();
   const apiKey = process.env.DEEPSEEK_API_KEY || "";
   if (!apiKey || apiKey.includes("your_deepseek_api_key_here")) {
-    throw new Error("DeepSeek 接口密钥未配置。请在 .env 中替换 DEEPSEEK_API_KEY。");
+    throw new Error("接口密钥未配置。请点击左下角“密钥”填写 DeepSeek API Key；也可以在 .env 中配置 DEEPSEEK_API_KEY。");
   }
   return {
     "authorization": `Bearer ${apiKey}`,
