@@ -3184,9 +3184,33 @@ function closeMenuOf(shell) {
   if (openSelectShell === shell) openSelectShell = null;
 }
 
+/* ===== 滑杆：把当前值同步为轨道填充比例，程序设值与手动拖动都保持一致 ===== */
+function enhanceRanges() {
+  const inputs = Array.from(document.querySelectorAll('input[type="range"]'));
+  const update = input => {
+    const min = Number(input.min) || 0;
+    const max = Number(input.max) || 100;
+    const value = Number(input.value) || 0;
+    const pct = max > min ? ((value - min) / (max - min)) * 100 : 0;
+    const clamped = `${Math.min(100, Math.max(0, pct))}%`;
+    if (input.style.getPropertyValue("--range-fill") !== clamped) {
+      input.style.setProperty("--range-fill", clamped);
+    }
+  };
+  for (const input of inputs) {
+    if (input.dataset.rangeEnhanced) continue;
+    input.dataset.rangeEnhanced = "1";
+    input.addEventListener("input", () => update(input));
+  }
+  const syncAll = () => inputs.forEach(update);
+  syncAll();
+  window.setInterval(syncAll, 250);
+}
+
 async function boot() {
   bindEvents();
   enhanceSelects();
+  enhanceRanges();
   state.config = await api("/api/config");
   state.endpoints = state.config.endpoints || [];
   state.models = state.config.models || [
