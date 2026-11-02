@@ -869,8 +869,8 @@ async function handleApi(req, res) {
         defaultModel: process.env.DEEPSEEK_MODEL || "deepseek-v4-pro",
         baseUrl: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com",
         models: [
-          { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current", note: "官方 API 当前可用，质量优先" },
-          { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current", note: "官方 API 当前可用（V4.1-Flash-1017），速度和成本优先" }
+          { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current", vision: false, note: "官方 API 当前可用，质量优先" },
+          { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current", vision: true, note: "官方 API 当前可用（V4.1-Flash-1017），速度和成本优先，支持视觉输入" }
         ],
         unavailableModels: [
           { id: "deepseek-chat", reason: "旧版别名，官方已停止使用" },

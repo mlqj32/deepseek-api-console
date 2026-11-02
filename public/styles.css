@@ -2251,6 +2251,12 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(245, 158, 11, .11);
 }
 
+.badge.vision {
+  border-color: rgba(139, 92, 246, .45);
+  background: #f5f3ff;
+  color: #6d28d9;
+}
+
 .note {
   border: 1px solid var(--line);
   background: rgba(255,255,255,.72);

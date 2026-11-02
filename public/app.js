@@ -1403,7 +1403,7 @@ function renderModels() {
     for (const model of list) {
       const option = document.createElement("option");
       option.value = model.id;
-      option.textContent = modelShortLabel(model);
+      option.textContent = `${modelShortLabel(model)}${model.vision ? " · 视觉" : ""}`;
       option.title = `${model.id} · ${statusLabel(model.status)}${model.note ? ` · ${model.note}` : ""}`;
       option.dataset.note = model.note || "";
       option.dataset.status = model.status || "";
@@ -1420,6 +1420,7 @@ function selectedModelInfo() {
     id,
     label: id,
     status: "unknown",
+    vision: false,
     note: "未知模型。"
   };
 }
@@ -1436,6 +1437,11 @@ function updateModelHint() {
   if (badge) {
     badge.textContent = info.status === "current" ? info.label.replace("深度求索 ", "") : statusLabel(info.status);
     badge.title = `${info.id} ${info.note || ""}`;
+  }
+  const visionBadge = $("#visionBadge");
+  if (visionBadge) {
+    visionBadge.classList.toggle("hidden", !info.vision);
+    visionBadge.title = info.vision ? `${info.id} 支持视觉输入` : "";
   }
 }
 
@@ -2956,8 +2962,8 @@ async function boot() {
   state.config = await api("/api/config");
   state.endpoints = state.config.endpoints || [];
   state.models = state.config.models || [
-    { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current" },
-    { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current" }
+    { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current", vision: false },
+    { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current", vision: true }
   ];
   setKeyState(state.config.keyConfigured);
   renderModels();
