@@ -1404,6 +1404,7 @@ function renderModels() {
       const option = document.createElement("option");
       option.value = model.id;
       option.textContent = `${modelShortLabel(model)}${model.vision ? " · 视觉" : ""}`;
+      option.dataset.vision = model.vision ? "1" : "";
       option.title = `${model.id} · ${statusLabel(model.status)}${model.note ? ` · ${model.note}` : ""}`;
       option.dataset.note = model.note || "";
       option.dataset.status = model.status || "";
@@ -2957,8 +2958,237 @@ function bindEvents() {
   $("#runApi").onclick = runApi;
 }
 
+/* ===== 自定义下拉选择：保留原生 select 承载数据与事件，外观与交互完全自定义 ===== */
+const SELECT_ENHANCE_IDS = ["model", "effort", "endpointPreset", "apiKind", "apiMethod"];
+const SELECT_LAYOUT_PROPS = ["flexGrow", "flexShrink", "flexBasis", "minWidth", "maxWidth", "marginTop", "marginBottom", "marginLeft", "marginRight", "fontSize", "fontWeight", "lineHeight", "order", "alignSelf"];
+let openSelectShell = null;
+
+function visionChip() {
+  const chip = document.createElement("span");
+  chip.className = "vision-chip";
+  chip.textContent = "视觉";
+  return chip;
+}
+
+function optionLabelParts(option) {
+  const text = option?.textContent || "";
+  if (option?.dataset?.vision === "1") {
+    return { text: text.replace(/\s*·\s*视觉$/, ""), vision: true };
+  }
+  return { text, vision: false };
+}
+
+function enhanceSelects() {
+  for (const id of SELECT_ENHANCE_IDS) {
+    const select = document.getElementById(id);
+    if (select && !select.dataset.enhanced) enhanceSelect(select);
+  }
+}
+
+function enhanceSelect(select) {
+  select.dataset.enhanced = "1";
+  const shell = document.createElement("span");
+  shell.className = "select-shell";
+  const cs = getComputedStyle(select);
+  if (cs.display === "inline" || cs.display === "block") {
+    shell.classList.add("block");
+  } else {
+    for (const prop of SELECT_LAYOUT_PROPS) shell.style[prop] = cs[prop];
+  }
+  shell.style.height = cs.height;
+  shell.style.fontSize = cs.fontSize;
+
+  const trigger = document.createElement("button");
+  trigger.type = "button";
+  trigger.className = "select-trigger";
+  trigger.setAttribute("aria-haspopup", "listbox");
+  trigger.setAttribute("aria-expanded", "false");
+  const labelText = document.createElement("span");
+  labelText.className = "text";
+  const label = document.createElement("span");
+  label.className = "select-trigger-label";
+  label.append(labelText);
+  trigger.append(label);
+
+  const menu = document.createElement("span");
+  menu.className = "select-menu";
+  menu.setAttribute("role", "listbox");
+
+  shell.append(trigger, menu);
+  select.parentNode.insertBefore(shell, select);
+  shell.append(select);
+  select.classList.add("select-native");
+
+  let lastValue = null;
+  let lastDisabled = null;
+  let activeIndex = -1;
+
+  function currentOption() {
+    return select.options[select.selectedIndex] || null;
+  }
+
+  function fillLabel(container, option) {
+    container.innerHTML = "";
+    const parts = optionLabelParts(option);
+    const text = document.createElement("span");
+    text.className = "text";
+    text.textContent = parts.text || "请选择";
+    container.append(text);
+    if (parts.vision) container.append(visionChip());
+  }
+
+  function sync() {
+    if (select.value === lastValue && select.disabled === lastDisabled) return;
+    lastValue = select.value;
+    lastDisabled = select.disabled;
+    shell.classList.toggle("is-disabled", select.disabled);
+    trigger.disabled = select.disabled;
+    trigger.title = select.title || "";
+    fillLabel(label, currentOption());
+  }
+
+  function closeMenu() {
+    shell.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+    if (openSelectShell === shell) openSelectShell = null;
+  }
+
+  function chooseOption(option) {
+    if (!option || option.disabled) return;
+    if (select.value !== option.value) {
+      select.value = option.value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    sync();
+    closeMenu();
+    trigger.focus();
+  }
+
+  function buildMenu() {
+    menu.innerHTML = "";
+    activeIndex = select.selectedIndex;
+    Array.from(select.options).forEach((option, index) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "select-option";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", option.selected ? "true" : "false");
+      const parts = optionLabelParts(option);
+      const text = document.createElement("span");
+      text.className = "text";
+      text.textContent = parts.text;
+      const check = document.createElement("span");
+      check.className = "check";
+      item.append(text);
+      if (parts.vision) item.append(visionChip());
+      item.append(check);
+      if (option.selected) item.classList.add("selected");
+      if (option.disabled) item.classList.add("disabled");
+      item.onclick = event => {
+        event.stopPropagation();
+        chooseOption(option);
+      };
+      item.onmouseenter = () => {
+        activeIndex = index;
+        highlightActive();
+      };
+      menu.append(item);
+    });
+  }
+
+  function highlightActive() {
+    Array.from(menu.children).forEach((item, index) => {
+      item.classList.toggle("active", index === activeIndex);
+    });
+  }
+
+  function moveActive(step) {
+    const count = select.options.length;
+    if (!count) return;
+    let next = activeIndex;
+    for (let i = 0; i < count; i += 1) {
+      next = (next + step + count) % count;
+      if (!select.options[next].disabled) break;
+    }
+    activeIndex = next;
+    highlightActive();
+    menu.children[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }
+
+  function openMenu() {
+    if (select.disabled) return;
+    if (openSelectShell && openSelectShell !== shell) closeMenuOf(openSelectShell);
+    buildMenu();
+    sync();
+    shell.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+    openSelectShell = shell;
+    const rect = shell.getBoundingClientRect();
+    const below = window.innerHeight - rect.bottom;
+    menu.classList.toggle("up", below < Math.min(menu.scrollHeight + 16, 280) && rect.top > below);
+    menu.children[activeIndex]?.scrollIntoView({ block: "nearest" });
+  }
+
+  trigger.onclick = event => {
+    event.stopPropagation();
+    if (shell.classList.contains("open")) closeMenu();
+    else openMenu();
+  };
+
+  trigger.onkeydown = event => {
+    const isOpen = shell.classList.contains("open");
+    if (event.key === "Escape") {
+      if (isOpen) closeMenu();
+      return;
+    }
+    if (!isOpen) {
+      if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {
+        event.preventDefault();
+        openMenu();
+      }
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      moveActive(1);
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      moveActive(-1);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      activeIndex = 0;
+      highlightActive();
+    } else if (event.key === "End") {
+      event.preventDefault();
+      activeIndex = select.options.length - 1;
+      highlightActive();
+    } else if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      chooseOption(select.options[activeIndex]);
+    } else if (event.key === "Tab") {
+      closeMenu();
+    }
+  };
+
+  document.addEventListener("click", event => {
+    if (shell.classList.contains("open") && !shell.contains(event.target)) closeMenu();
+  });
+
+  sync();
+  const observer = new MutationObserver(sync);
+  observer.observe(select, { attributes: true, attributeFilter: ["disabled", "title"] });
+  window.setInterval(sync, 250);
+}
+
+function closeMenuOf(shell) {
+  shell.classList.remove("open");
+  shell.querySelector(".select-trigger")?.setAttribute("aria-expanded", "false");
+  if (openSelectShell === shell) openSelectShell = null;
+}
+
 async function boot() {
   bindEvents();
+  enhanceSelects();
   state.config = await api("/api/config");
   state.endpoints = state.config.endpoints || [];
   state.models = state.config.models || [
