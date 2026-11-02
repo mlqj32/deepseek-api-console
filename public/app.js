@@ -3022,6 +3022,7 @@ function enhanceSelect(select) {
   let lastValue = null;
   let lastDisabled = null;
   let activeIndex = -1;
+  let visibleOptions = [];
 
   function currentOption() {
     return select.options[select.selectedIndex] || null;
@@ -3066,8 +3067,9 @@ function enhanceSelect(select) {
 
   function buildMenu() {
     menu.innerHTML = "";
-    activeIndex = select.selectedIndex;
-    Array.from(select.options).forEach((option, index) => {
+    visibleOptions = Array.from(select.options).filter(option => !option.disabled && !option.hidden);
+    activeIndex = Math.max(0, visibleOptions.indexOf(currentOption()));
+    visibleOptions.forEach((option, index) => {
       const item = document.createElement("button");
       item.type = "button";
       item.className = "select-option";
@@ -3103,14 +3105,9 @@ function enhanceSelect(select) {
   }
 
   function moveActive(step) {
-    const count = select.options.length;
+    const count = visibleOptions.length;
     if (!count) return;
-    let next = activeIndex;
-    for (let i = 0; i < count; i += 1) {
-      next = (next + step + count) % count;
-      if (!select.options[next].disabled) break;
-    }
-    activeIndex = next;
+    activeIndex = (activeIndex + step + count) % count;
     highlightActive();
     menu.children[activeIndex]?.scrollIntoView({ block: "nearest" });
   }
@@ -3120,6 +3117,7 @@ function enhanceSelect(select) {
     if (openSelectShell && openSelectShell !== shell) closeMenuOf(openSelectShell);
     buildMenu();
     sync();
+    if (!visibleOptions.length) return;
     shell.classList.add("open");
     trigger.setAttribute("aria-expanded", "true");
     openSelectShell = shell;
@@ -3160,11 +3158,11 @@ function enhanceSelect(select) {
       highlightActive();
     } else if (event.key === "End") {
       event.preventDefault();
-      activeIndex = select.options.length - 1;
+      activeIndex = visibleOptions.length - 1;
       highlightActive();
     } else if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      chooseOption(select.options[activeIndex]);
+      chooseOption(visibleOptions[activeIndex]);
     } else if (event.key === "Tab") {
       closeMenu();
     }
