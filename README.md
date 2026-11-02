@@ -68,9 +68,9 @@ DEEPSEEK_MODEL=deepseek-v4-pro
 项目界面保留的是当前已接入和可用的 DeepSeek API 模型入口：
 
 - `deepseek-v4-pro`：质量优先，适合复杂推理和正式回答。
-- `deepseek-v4-flash`：速度优先，适合轻量问答和快速草稿。
+- `deepseek-flash`：速度和成本优先（当前由 DeepSeek-V4.1-Flash-1017 提供），适合轻量问答和快速草稿。
 
-如果 DeepSeek 官方后续开放新的模型 ID，可以在后端模型列表和前端模型选择处继续补充。
+`deepseek-v4-flash` 是旧版名称，对应模型已退役，官方仍兼容调用但统一由 `deepseek-flash` 接管，建议直接使用新名称。如果 DeepSeek 官方后续开放新的模型 ID，可以在后端模型列表和前端模型选择处继续补充。
 
 ## 项目结构
 

@@ -1389,7 +1389,7 @@ function statusLabel(status) {
 function modelShortLabel(model) {
   const label = model.label || model.id || "";
   if (/v4[-\s]?pro/i.test(label) || /v4[-\s]?pro/i.test(model.id || "")) return "DeepSeek V4 Pro";
-  if (/v4[-\s]?flash/i.test(label) || /v4[-\s]?flash/i.test(model.id || "")) return "DeepSeek V4 Flash";
+  if (/flash/i.test(label) || /flash/i.test(model.id || "")) return "DeepSeek Flash";
   return label.replace(/^深度求索\s*/, "DeepSeek ") || model.id;
 }
 
@@ -1489,10 +1489,10 @@ function usageNumber(usage, keys) {
 }
 
 function modelPricing(model) {
-  if (model === "deepseek-v4-flash") {
-    return { cacheHit: 0.0028, cacheMiss: 0.14, output: 0.28 };
+  if (model === "deepseek-flash" || model === "deepseek-v4-flash") {
+    return { cacheHit: 0.003, cacheMiss: 0.15, output: 0.6 };
   }
-  return { cacheHit: 0.003625, cacheMiss: 0.435, output: 0.87 };
+  return { cacheHit: 0.022, cacheMiss: 0.66, output: 1.98 };
 }
 
 function estimateMessageCost(message, input, output, hit) {
@@ -2957,7 +2957,7 @@ async function boot() {
   state.endpoints = state.config.endpoints || [];
   state.models = state.config.models || [
     { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current" },
-    { id: "deepseek-v4-flash", label: "深度求索 V4 Flash", group: "official", status: "current" }
+    { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current" }
   ];
   setKeyState(state.config.keyConfigured);
   renderModels();

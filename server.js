@@ -378,10 +378,10 @@ function searchResultsFromBlock(block) {
 }
 
 function pricingForModel(model) {
-  if (model === "deepseek-v4-flash") {
-    return { cacheHit: 0.0028, cacheMiss: 0.14, output: 0.28, currency: "USD" };
+  if (model === "deepseek-flash" || model === "deepseek-v4-flash") {
+    return { cacheHit: 0.003, cacheMiss: 0.15, output: 0.6, currency: "USD" };
   }
-  return { cacheHit: 0.003625, cacheMiss: 0.435, output: 0.87, currency: "USD" };
+  return { cacheHit: 0.022, cacheMiss: 0.66, output: 1.98, currency: "USD" };
 }
 
 function usageField(usage, keys) {
@@ -870,11 +870,12 @@ async function handleApi(req, res) {
         baseUrl: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com",
         models: [
           { id: "deepseek-v4-pro", label: "深度求索 V4 Pro", group: "official", status: "current", note: "官方 API 当前可用，质量优先" },
-          { id: "deepseek-v4-flash", label: "深度求索 V4 Flash", group: "official", status: "current", note: "官方 API 当前可用，速度和成本优先" }
+          { id: "deepseek-flash", label: "深度求索 Flash", group: "official", status: "current", note: "官方 API 当前可用（V4.1-Flash-1017），速度和成本优先" }
         ],
         unavailableModels: [
           { id: "deepseek-chat", reason: "旧版别名，官方已停止使用" },
           { id: "deepseek-reasoner", reason: "旧版别名，官方已停止使用" },
+          { id: "deepseek-v4-flash", reason: "旧版名称，对应模型已退役，官方仍兼容调用但由 deepseek-flash（V4.1-Flash-1017）接管，建议改用新名称" },
           { id: "DeepSeek-V3 / V3.1 / V3.2 / R1 / Coder / Math / MoE", reason: "属于开源或历史系列，官方 API 当前没有把这些作为可直接调用的模型 ID；需要自部署或第三方兼容网关" }
         ],
         endpoints: [
